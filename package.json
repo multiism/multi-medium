@@ -1,0 +1,11 @@
+{
+  "name": "multi-medium",
+  "version": "0.0.0",
+  "description": "Write.",
+  "dependencies": {
+    "coffee-script": "^1.9.3"
+  },
+  "scripts": {
+    "prepublish": "coffee -co . ."
+  }
+}
