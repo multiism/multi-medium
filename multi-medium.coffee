@@ -24,9 +24,13 @@ Spanvas = (word)->
 		canvas.height = rect.height
 		canvas.style.display = "inline-block"
 		ctx = canvas.getContext "2d"
-		ctx.fillStyle = style.color
-		for x in [0..canvas.width-5] by 10
-			ctx.fillRect x, canvas.height * (if Math.random() < 0.4 then 0.5 else 0.1), 10, canvas.height
+		ctx.beginPath()
+		for x in [0..canvas.width]
+			ctx.lineTo x, canvas.height/2 + canvas.height/2 * Math.sin(x) * Math.random(), 10, canvas.height
+			if Math.random() < 0.04
+				ctx.arc x, canvas.height/2 + canvas.height/2 * Math.sin(x) * Math.random(), 10, Math.PI * Math.random(), Math.PI * Math.random()
+		ctx.strokeStyle = style.color
+		ctx.stroke()
 		spanvas.style.color = "transparent"
 	spanvas
 
@@ -50,4 +54,11 @@ Spanvas = (word)->
 	
 	setTimeout render, 100
 	
+	element
+
+@MultiMedium.Input = ->
+	element = document.createElement "div"
+	canvas = document.createElement "canvas"
+	ctx = canvas.getContext "2d"
+	element.appendChild canvas
 	element
