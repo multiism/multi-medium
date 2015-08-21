@@ -8,16 +8,11 @@ Spanvas = (word)->
 	canvas.style.userSelect = "none"
 	canvas.style.webkitUserSelect = "none"
 	canvas.style.pointerEvents = "none"
-	span = document.createElement "span"
-	span.style.position = "absolute"
-	span.style.left = "0"
-	span.style.top = "0"
-	span.style.userSelect = "none"
-	span.style.webkitUserSelect = "none"
-	span.style.pointerEvents = "none"
-	span.appendChild canvas
+	canvas.style.position = "absolute"
+	canvas.style.left = "0"
+	canvas.style.top = "0"
 	spanvas.appendChild document.createTextNode word
-	spanvas.appendChild span
+	spanvas.appendChild canvas
 	spanvas.render = (style)->
 		rect = spanvas.getBoundingClientRect()
 		canvas.width = rect.width
