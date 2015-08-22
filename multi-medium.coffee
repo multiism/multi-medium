@@ -215,6 +215,10 @@ Spanvas = (word, data)->
 	
 	render = ->
 		ctx.clearRect 0, 0, canvas.width, canvas.height
+		ctx.fillStyle = "rgba(100, 100, 100, 0.1)"
+		ctx.font = "#{canvas.height-40}px sans-serif"
+		selected_word = selected_spanvas?.textContent ? selected_spanvas?.innerText
+		ctx.fillText selected_word, 0, canvas.height-40
 		ctx.strokeStyle = element_style?.color
 		ctx.lineWidth = 10
 		draw_strokes strokes, ctx

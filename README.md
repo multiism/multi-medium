@@ -17,7 +17,6 @@ See a [demo](http://multiism.github.io/multi-medium/).
 	* Or automatically give your room when you near the edge
 	* Shift the word off left with an animation (and continue showing part of it)
 * Handwriting conversion mode (writing out existing text)
-	* Placeholder text / show prompted word for writing
 	* Next word button
 	* Easily export the data for persistence (paste into html)
 	* Save to `localStorage`
