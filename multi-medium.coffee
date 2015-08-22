@@ -192,6 +192,7 @@ Spanvas = (word, data)->
 		ctx.beginPath()
 		for {points} in strokes
 			ctx.moveTo(points[0].x, points[0].y)
+			ctx.lineTo(points[0].x, points[0].y+0.01) if points.length is 1
 			ctx.lineTo(point.x, point.y) for point in points
 			ctx.points
 		ctx.strokeStyle = element_style?.color
@@ -217,6 +218,7 @@ Spanvas = (word, data)->
 		stroke = points: [point_for e]
 		pointers[e.pointerId] = {stroke, type: e.pointerType}
 		strokes.push stroke
+		render()
 	
 	window.addEventListener "pointermove", (e)->
 		pointer = pointers[e.pointerId]
@@ -227,10 +229,6 @@ Spanvas = (word, data)->
 			selected_spanvas.setData {strokes}
 	
 	window.addEventListener "pointerup", (e)->
-		pointer = pointers[e.pointerId]
-		if pointer
-			if pointer.stroke.points.length < 2 # doesn't make a line
-				strokes.splice strokes.indexOf(pointer.stroke), 1
 		delete pointers[e.pointerId]
 	
 	canvas.addEventListener "pointercancel", (e)->
