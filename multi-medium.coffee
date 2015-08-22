@@ -176,6 +176,8 @@ Spanvas = (word, data)->
 		canvas.width = element.clientWidth - pl - pr - cml - cmr - cpl - cpr - cbl - cbr
 		canvas.height = element.clientHeight - pt - pb - cmt - cmb - cpt - cpb - cbt - cbb
 		# WOW, THAT'S A LITTLE BIT UBSURD, DON'T YOU THINK?
+		
+		render()
 	
 	pointers = {}
 	strokes = []
@@ -241,6 +243,7 @@ Spanvas = (word, data)->
 	# element.appendChild button
 	
 	setTimeout update_dimensions, 1
+	window.addEventListener "resize", update_dimensions
 	
 	element.clear = clear
 	
