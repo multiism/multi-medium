@@ -5,10 +5,14 @@ the_input = null
 
 serialize_strokes = (strokes)->
 	# console.log "serialize_strokes", strokes
+	resolution = 1000
 	for {points} in strokes
 		a = []
 		for point in points
-			a.push point.x, point.y
+			a.push(
+				(~~(point.x * resolution)) / resolution
+				(~~(point.y * resolution)) / resolution
+			)
 		a
 
 deserialize_strokes = (strokes)->
@@ -64,8 +68,8 @@ Spanvas = (word, data)->
 	
 	spanvas.setData = (data)->
 		{strokes} = data
-		# if strokes?.length
-		# 	spanvas.setAttribute("data-handwriting", JSON.stringify(serialize_strokes(strokes)))
+		if strokes?.length
+			spanvas.setAttribute("data-handwriting", JSON.stringify([{strokes: serialize_strokes(strokes)}]))
 		spanvas.render()
 	
 	spanvas.setStyle = (new_style)->
@@ -81,7 +85,7 @@ Spanvas = (word, data)->
 		ctx = canvas.getContext "2d"
 		
 		if strokes
-			scale = canvas.height / 150
+			scale = canvas.height
 			
 			weight = switch style?.fontWeight
 				when "normal" then 400
@@ -101,13 +105,14 @@ Spanvas = (word, data)->
 					# max_y = Math.max(max_y, point.y)
 					# min_y = Math.min(min_y, point.y)
 			
-			canvas.width = (max_x - min_x) * scale + line_width * 4
+			padding = line_width * 2
+			canvas.width = (max_x - min_x) * scale + padding * 2
 			
 			ctx.lineWidth = line_width
 			ctx.strokeStyle = style?.color
 			ctx.clearRect 0, 0, canvas.width, canvas.height
 			ctx.save()
-			ctx.translate(-min_x * scale + line_width * 2, 0)
+			ctx.translate(-min_x * scale + padding, 0)
 			draw_strokes strokes, ctx, scale
 			ctx.restore()
 			
@@ -211,6 +216,8 @@ Spanvas = (word, data)->
 	clear = ->
 		pointers = {}
 		strokes = []
+		undoes = []
+		redoes = []
 		render()
 	
 	undo = ->
@@ -230,14 +237,15 @@ Spanvas = (word, data)->
 		redoes = []
 	
 	render = ->
+		baseline = canvas.height * 0.8
 		ctx.clearRect 0, 0, canvas.width, canvas.height
 		ctx.fillStyle = "rgba(100, 100, 100, 0.1)"
-		ctx.font = "#{canvas.height-40}px sans-serif"
+		ctx.font = "#{baseline}px sans-serif"
 		selected_word = selected_spanvas?.textContent ? selected_spanvas?.innerText
-		ctx.fillText selected_word, 20, canvas.height-40
+		ctx.fillText selected_word, 20, baseline
 		ctx.strokeStyle = element_style?.color
 		ctx.lineWidth = 10
-		draw_strokes strokes, ctx
+		draw_strokes strokes, ctx, canvas.height
 	
 	point_for = (e)->
 		rect = canvas.getBoundingClientRect()
@@ -246,8 +254,9 @@ Spanvas = (word, data)->
 		cpt = parseInt canvas_style.paddingTop
 		cpl = 0 if isNaN cpl
 		cpt = 0 if isNaN cpt
-		x: e.clientX - rect.left - cpl
-		y: e.clientY - rect.top - cpt
+		scale = canvas.height
+		x: (e.clientX - rect.left - cpl) / scale
+		y: (e.clientY - rect.top - cpt) / scale
 	
 	canvas.addEventListener "pointerdown", (e)->
 		return if e.pointerType is "mouse" and e.button isnt 0
