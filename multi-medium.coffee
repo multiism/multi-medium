@@ -68,8 +68,8 @@ Spanvas = (word, data)->
 	
 	spanvas.setData = (data)->
 		{strokes} = data
-		if strokes?.length
-			spanvas.setAttribute("data-handwriting", JSON.stringify([{strokes: serialize_strokes(strokes)}]))
+		# if strokes?.length
+		# 	spanvas.setAttribute("data-handwriting", JSON.stringify([{strokes: serialize_strokes(strokes)}]))
 		spanvas.render()
 	
 	spanvas.setStyle = (new_style)->
@@ -79,44 +79,44 @@ Spanvas = (word, data)->
 	spanvas.render = ->
 		rect = spanvas.getBoundingClientRect()
 		original_width ?= rect.width
-		canvas.width = rect.width
-		canvas.height = rect.height
 		canvas.style.display = "inline-block"
 		ctx = canvas.getContext "2d"
 		
 		if strokes
-			scale = canvas.height
+			scale = rect.height
 			
 			weight = switch style?.fontWeight
 				when "normal" then 400
 				when "bold" then 700
 				else style?.fontWeight
 			
-			line_width = 1 + (parseInt(weight) / 400 * canvas.height / 30)
+			line_width = 1 + (parseInt(weight) / 400 * scale / 30)
 			
 			max_x = 0
 			min_x = Infinity
-			# max_y = 0
-			# min_y = 0
+			max_y = 0
+			min_y = Infinity
 			for {points} in strokes
 				for point in points
 					max_x = Math.max(max_x, point.x)
 					min_x = Math.min(min_x, point.x)
-					# max_y = Math.max(max_y, point.y)
-					# min_y = Math.min(min_y, point.y)
+					max_y = Math.max(max_y, point.y)
+					min_y = Math.min(min_y, point.y)
 			
 			padding = line_width * 2
+			y_offset = ~~Math.min(0, min_y * scale)
 			canvas.width = (max_x - min_x) * scale + padding * 2
+			canvas.height = Math.max(rect.height, max_y * scale - y_offset + padding * 2)
 			
 			ctx.lineWidth = line_width
 			ctx.strokeStyle = style?.color
-			ctx.clearRect 0, 0, canvas.width, canvas.height
 			ctx.save()
-			ctx.translate(-min_x * scale + padding, 0)
+			ctx.translate(-min_x * scale + padding, -y_offset + padding)
 			draw_strokes strokes, ctx, scale
 			ctx.restore()
 			
 			spanvas.style.color = "transparent"
+			canvas.style.top = "#{y_offset}px"
 			
 			if canvas.width isnt rect.width
 				spanvas.style.letterSpacing = "#{Math.max(-8, (canvas.width - original_width) / word.length)}px"
