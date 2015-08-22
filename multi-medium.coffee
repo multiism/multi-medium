@@ -4,7 +4,7 @@ selected_spanvas = null
 the_input = null
 
 serialize_strokes = (strokes)->
-	console.log "serialize_strokes", strokes
+	# console.log "serialize_strokes", strokes
 	for {points} in strokes
 		a = []
 		for point in points
@@ -12,7 +12,7 @@ serialize_strokes = (strokes)->
 		a
 
 deserialize_strokes = (strokes)->
-	console.log "deserialize_strokes", strokes
+	# console.log "deserialize_strokes", strokes
 	for coords in strokes
 		points: for i in [0...coords.length] by 2
 			{x: coords[i], y: coords[i+1]}
@@ -41,8 +41,6 @@ Spanvas = (word, data)->
 	style = null
 	
 	spanvas.select = ->
-		# for each_spanvas in all_spanvases
-		# 	each_spanvas.classList.remove "selected"
 		selected_spanvas?.classList.remove "selected"
 		selected_spanvas?.render()
 		selected_spanvas = spanvas
@@ -96,7 +94,6 @@ Spanvas = (word, data)->
 			spanvas.style.color = "transparent"
 			
 			if canvas.width isnt rect.width
-				# spanvas.style.width = "#{canvas.width}px" only works with display: inline-block which would make text-indent apply to the inside of each spanvas
 				spanvas.style.letterSpacing = "#{Math.max(-8, (canvas.width - original_width) / word.length)}px"
 	
 	setTimeout ->
@@ -115,7 +112,7 @@ Spanvas = (word, data)->
 			data = handwriting_data?[i]
 			if data
 				strokes = deserialize_strokes data.strokes
-				console.log "deserialized as", strokes
+				# console.log "deserialized as", strokes
 			spanvas = Spanvas word, {strokes}
 			element.appendChild spanvas
 			unless i + 1 is words.length
@@ -256,5 +253,3 @@ setTimeout ->
 		spanvas.select()
 		break
 , 100
-
-# @TODO: establish API boundaries
