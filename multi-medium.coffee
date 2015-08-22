@@ -1,5 +1,23 @@
 
-Spanvas = (word)->
+all_spanvases = []
+selected_spanvas = null
+the_input = null
+
+serialize_strokes = (strokes)->
+	console.log "serialize_strokes", strokes
+	for {points} in strokes
+		a = []
+		for point in points
+			a.push point.x, point.y
+		a
+
+deserialize_strokes = (strokes)->
+	console.log "deserialize_strokes", strokes
+	for coords in strokes
+		points: for i in [0...coords.length] by 2
+			{x: coords[i], y: coords[i+1]}
+
+Spanvas = (word, data)->
 	spanvas = document.createElement "span"
 	spanvas.style.position = "relative"
 	spanvas.className = "multi-medium-word"
@@ -11,32 +29,91 @@ Spanvas = (word)->
 	canvas.style.position = "absolute"
 	canvas.style.left = "0"
 	canvas.style.top = "0"
+	
+	spanvas.style.cursor = "pointer"
+	spanvas.addEventListener "click", (e)->
+		spanvas.select()
+	
 	spanvas.appendChild document.createTextNode word
 	spanvas.appendChild canvas
-	spanvas.render = (style)->
+	
+	strokes = null
+	style = null
+	
+	spanvas.select = ->
+		# for each_spanvas in all_spanvases
+		# 	each_spanvas.classList.remove "selected"
+		selected_spanvas?.classList.remove "selected"
+		selected_spanvas?.render()
+		selected_spanvas = spanvas
+		selected_spanvas.classList.add "selected"
+		selected_spanvas.render()
+		the_input?.clear()
+	
+	spanvas.setData = (data)->
+		{strokes} = data
+		if strokes?.length
+			spanvas.setAttribute("data-handwriting", JSON.stringify(serialize_strokes(strokes)))
+		spanvas.render()
+	
+	spanvas.setStyle = (new_style)->
+		style = new_style
+	
+	original_width = null
+	spanvas.render = ->
 		rect = spanvas.getBoundingClientRect()
+		original_width ?= rect.width
 		canvas.width = rect.width
 		canvas.height = rect.height
 		canvas.style.display = "inline-block"
 		ctx = canvas.getContext "2d"
-		ctx.beginPath()
-		for x in [0..canvas.width]
-			ctx.lineTo x, canvas.height/2 + canvas.height/2 * Math.sin(x) * Math.random(), 10, canvas.height
-			if Math.random() < 0.04
-				ctx.arc x, canvas.height/2 + canvas.height/2 * Math.sin(x) * Math.random(), 10, Math.PI * Math.random(), Math.PI * Math.random()
-		ctx.strokeStyle = style.color
-		ctx.stroke()
-		spanvas.style.color = "transparent"
+		
+		if strokes
+			scale = canvas.height / 150
+			max_x = 0
+			max_x = Math.max(max_x, point.x) for point in points for {points} in strokes
+			canvas.width = max_x * scale + ctx.lineWidth * 2
+			
+			weight = switch style?.fontWeight
+				when "normal" then 400
+				when "bold" then 700
+				else style?.fontWeight
+			
+			ctx.lineWidth = 1 + (parseInt(weight) / 400 * canvas.height / 30)
+			ctx.lineJoin = "round"
+			ctx.lineCap = "round"
+			ctx.strokeStyle = style?.color
+			ctx.clearRect 0, 0, canvas.width, canvas.height
+			ctx.beginPath()
+			for {points} in strokes
+				ctx.moveTo(points[0].x*scale, points[0].y*scale)
+				ctx.lineTo(point.x*scale, point.y*scale) for point in points
+				ctx.points
+			ctx.stroke()
+			spanvas.style.color = "transparent"
+			
+			if canvas.width isnt rect.width
+				# spanvas.style.width = "#{canvas.width}px" only works with display: inline-block which would make text-indent apply to the inside of each spanvas
+				spanvas.style.letterSpacing = "#{Math.max(-8, (canvas.width - original_width) / word.length)}px"
+	
+	setTimeout ->
+		spanvas.setData data if data
+	
+	all_spanvases.push spanvas
 	spanvas
 
 
-@MultiMedium = (source)->
+@MultiMedium = (text, handwriting_data)->
 	element = document.createElement "span"
-	words = source.split " "
+	words = text.split " "
 	
 	spanvases =
 		for word, i in words
-			spanvas = Spanvas word
+			data = handwriting_data?[i]
+			if data
+				strokes = deserialize_strokes data.strokes
+				console.log "deserialized as", strokes
+			spanvas = Spanvas word, {strokes}
 			element.appendChild spanvas
 			unless i + 1 is words.length
 				element.appendChild document.createTextNode " "
@@ -45,7 +122,8 @@ Spanvas = (word)->
 	render = ->
 		style = getComputedStyle element
 		for spanvas in spanvases
-			spanvas.render style
+			spanvas.setStyle style
+			spanvas.render()
 	
 	setTimeout render, 1
 	
@@ -102,6 +180,11 @@ Spanvas = (word)->
 	pointers = {}
 	strokes = []
 	
+	clear = ->
+		pointers = {}
+		strokes = []
+		render()
+	
 	render = ->
 		ctx.clearRect 0, 0, canvas.width, canvas.height
 		ctx.beginPath()
@@ -139,6 +222,7 @@ Spanvas = (word)->
 			e.preventDefault()
 			pointer.stroke.points.push point_for e
 			render()
+			selected_spanvas.setData {strokes}
 	
 	window.addEventListener "pointerup", (e)->
 		pointer = pointers[e.pointerId]
@@ -153,6 +237,18 @@ Spanvas = (word)->
 			strokes.splice strokes.indexOf(pointer.stroke), 1
 		delete pointers[e.pointerId]
 	
+	# button = null
+	# element.appendChild button
+	
 	setTimeout update_dimensions, 1
 	
+	element.clear = clear
+	
+	if the_input then alert "Multiple MultiMedium.Inputs aren't exactly supported (for a silly reason)"
+	the_input = element
 	element
+
+setTimeout ->
+	all_spanvases[0].select()
+
+# @TODO: establish API boundaries
