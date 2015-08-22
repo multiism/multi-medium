@@ -50,10 +50,13 @@ Spanvas = (word, data)->
 		selected_spanvas.render()
 		the_input?.clear()
 	
+	spanvas.hasData = ->
+		if strokes then yes else no
+	
 	spanvas.setData = (data)->
 		{strokes} = data
-		if strokes?.length
-			spanvas.setAttribute("data-handwriting", JSON.stringify(serialize_strokes(strokes)))
+		# if strokes?.length
+		# 	spanvas.setAttribute("data-handwriting", JSON.stringify(serialize_strokes(strokes)))
 		spanvas.render()
 	
 	spanvas.setStyle = (new_style)->
@@ -249,6 +252,9 @@ Spanvas = (word, data)->
 	element
 
 setTimeout ->
-	all_spanvases[0].select()
+	for spanvas in all_spanvases when not spanvas.hasData()
+		spanvas.select()
+		break
+, 100
 
 # @TODO: establish API boundaries
