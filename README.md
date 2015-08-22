@@ -9,7 +9,6 @@ See a [demo](http://multiism.github.io/multi-medium/).
 
 ## TODO
 
-* Shift handwritten word to the left by *`min_x`*
 * Use less arbitrary coordinate system
 * Undo/redo buttons for mobile
 * Write longer words

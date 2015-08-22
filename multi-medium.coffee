@@ -82,19 +82,35 @@ Spanvas = (word, data)->
 		
 		if strokes
 			scale = canvas.height / 150
-			max_x = 0
-			max_x = Math.max(max_x, point.x) for point in points for {points} in strokes
-			canvas.width = max_x * scale + ctx.lineWidth * 2
 			
 			weight = switch style?.fontWeight
 				when "normal" then 400
 				when "bold" then 700
 				else style?.fontWeight
 			
-			ctx.lineWidth = 1 + (parseInt(weight) / 400 * canvas.height / 30)
+			line_width = 1 + (parseInt(weight) / 400 * canvas.height / 30)
+			
+			max_x = 0
+			min_x = Infinity
+			# max_y = 0
+			# min_y = 0
+			for {points} in strokes
+				for point in points
+					max_x = Math.max(max_x, point.x)
+					min_x = Math.min(min_x, point.x)
+					# max_y = Math.max(max_y, point.y)
+					# min_y = Math.min(min_y, point.y)
+			
+			canvas.width = (max_x - min_x) * scale + line_width * 4
+			
+			ctx.lineWidth = line_width
 			ctx.strokeStyle = style?.color
 			ctx.clearRect 0, 0, canvas.width, canvas.height
+			ctx.save()
+			ctx.translate(-min_x * scale + line_width * 2, 0)
 			draw_strokes strokes, ctx, scale
+			ctx.restore()
+			
 			spanvas.style.color = "transparent"
 			
 			if canvas.width isnt rect.width
@@ -218,7 +234,7 @@ Spanvas = (word, data)->
 		ctx.fillStyle = "rgba(100, 100, 100, 0.1)"
 		ctx.font = "#{canvas.height-40}px sans-serif"
 		selected_word = selected_spanvas?.textContent ? selected_spanvas?.innerText
-		ctx.fillText selected_word, 0, canvas.height-40
+		ctx.fillText selected_word, 20, canvas.height-40
 		ctx.strokeStyle = element_style?.color
 		ctx.lineWidth = 10
 		draw_strokes strokes, ctx
