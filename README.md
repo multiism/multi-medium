@@ -11,7 +11,7 @@ See a [demo](http://multiism.github.io/multi-medium/).
 
 * Shift handwritten word to the left by *`min_x`*
 * Use less arbitrary coordinate system
-* Undo/redo
+* Undo/redo buttons for mobile
 * Write longer words
 	* A metaphorical hyphen gesture
 	* Or automatically give your room when you near the edge

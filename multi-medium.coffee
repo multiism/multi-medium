@@ -181,11 +181,29 @@ Spanvas = (word, data)->
 	
 	pointers = {}
 	strokes = []
+	undoes = []
+	redoes = []
 	
 	clear = ->
 		pointers = {}
 		strokes = []
 		render()
+	
+	undo = ->
+		if undoes.length
+			redoes.push serialize_strokes strokes
+			strokes = deserialize_strokes undoes.pop()
+			render()
+	
+	redo = ->
+		if redoes.length
+			undoes.push serialize_strokes strokes
+			strokes = deserialize_strokes redoes.pop()
+			render()
+	
+	undoable = ->
+		undoes.push serialize_strokes strokes
+		redoes = []
 	
 	render = ->
 		ctx.clearRect 0, 0, canvas.width, canvas.height
@@ -215,6 +233,7 @@ Spanvas = (word, data)->
 	canvas.addEventListener "pointerdown", (e)->
 		return if e.pointerType is "mouse" and e.button isnt 0
 		e.preventDefault()
+		undoable()
 		stroke = points: [point_for e]
 		pointers[e.pointerId] = {stroke, type: e.pointerType}
 		strokes.push stroke
@@ -239,6 +258,14 @@ Spanvas = (word, data)->
 	
 	# button = null
 	# element.appendChild button
+	
+	# @TODO: localize this event listener
+	window.addEventListener "keydown", (e)->
+		if e.ctrlKey and not (e.metaKey or e.altKey)
+			if e.keyCode is 90 # Z
+				if e.shiftKey then redo() else undo()
+			if e.keyCode is 89 # Y
+				redo()
 	
 	setTimeout update_dimensions, 1
 	window.addEventListener "resize", update_dimensions
