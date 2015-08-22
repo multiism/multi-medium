@@ -23,7 +23,7 @@ draw_strokes = (strokes, ctx, scale=1)->
 	ctx.beginPath()
 	for {points} in strokes
 		ctx.moveTo(points[0].x*scale, points[0].y*scale)
-		ctx.lineTo(points[0].x, points[0].y+0.01) if points.length is 1
+		ctx.lineTo(points[0].x*scale, points[0].y*scale+0.01) if points.length is 1
 		ctx.lineTo(point.x*scale, point.y*scale) for point in points
 		ctx.points
 	ctx.stroke()
@@ -188,6 +188,10 @@ Spanvas = (word, data)->
 	undoes = []
 	redoes = []
 	
+	update = ->
+		render()
+		selected_spanvas.setData {strokes}
+	
 	clear = ->
 		pointers = {}
 		strokes = []
@@ -197,13 +201,13 @@ Spanvas = (word, data)->
 		if undoes.length
 			redoes.push serialize_strokes strokes
 			strokes = deserialize_strokes undoes.pop()
-			render()
+			update()
 	
 	redo = ->
 		if redoes.length
 			undoes.push serialize_strokes strokes
 			strokes = deserialize_strokes redoes.pop()
-			render()
+			update()
 	
 	undoable = ->
 		undoes.push serialize_strokes strokes
@@ -232,15 +236,14 @@ Spanvas = (word, data)->
 		stroke = points: [point_for e]
 		pointers[e.pointerId] = {stroke, type: e.pointerType}
 		strokes.push stroke
-		render()
+		update()
 	
 	window.addEventListener "pointermove", (e)->
 		pointer = pointers[e.pointerId]
 		if pointer
 			e.preventDefault()
 			pointer.stroke.points.push point_for e
-			render()
-			selected_spanvas.setData {strokes}
+			update()
 	
 	window.addEventListener "pointerup", (e)->
 		delete pointers[e.pointerId]
