@@ -17,6 +17,17 @@ deserialize_strokes = (strokes)->
 		points: for i in [0...coords.length] by 2
 			{x: coords[i], y: coords[i+1]}
 
+draw_strokes = (strokes, ctx, scale=1)->
+	ctx.lineJoin = "round"
+	ctx.lineCap = "round"
+	ctx.beginPath()
+	for {points} in strokes
+		ctx.moveTo(points[0].x*scale, points[0].y*scale)
+		ctx.lineTo(points[0].x, points[0].y+0.01) if points.length is 1
+		ctx.lineTo(point.x*scale, point.y*scale) for point in points
+		ctx.points
+	ctx.stroke()
+
 Spanvas = (word, data)->
 	spanvas = document.createElement "span"
 	spanvas.style.position = "relative"
@@ -81,16 +92,9 @@ Spanvas = (word, data)->
 				else style?.fontWeight
 			
 			ctx.lineWidth = 1 + (parseInt(weight) / 400 * canvas.height / 30)
-			ctx.lineJoin = "round"
-			ctx.lineCap = "round"
 			ctx.strokeStyle = style?.color
 			ctx.clearRect 0, 0, canvas.width, canvas.height
-			ctx.beginPath()
-			for {points} in strokes
-				ctx.moveTo(points[0].x*scale, points[0].y*scale)
-				ctx.lineTo(point.x*scale, point.y*scale) for point in points
-				ctx.points
-			ctx.stroke()
+			draw_strokes strokes, ctx, scale
 			spanvas.style.color = "transparent"
 			
 			if canvas.width isnt rect.width
@@ -207,18 +211,9 @@ Spanvas = (word, data)->
 	
 	render = ->
 		ctx.clearRect 0, 0, canvas.width, canvas.height
-		ctx.beginPath()
-		for {points} in strokes
-			ctx.moveTo(points[0].x, points[0].y)
-			ctx.lineTo(points[0].x, points[0].y+0.01) if points.length is 1
-			ctx.lineTo(point.x, point.y) for point in points
-			ctx.points
 		ctx.strokeStyle = element_style?.color
-		# ctx.lineWidth = element_style?.fontSize / 10
 		ctx.lineWidth = 10
-		ctx.lineJoin = "round"
-		ctx.lineCap = "round"
-		ctx.stroke()
+		draw_strokes strokes, ctx
 	
 	point_for = (e)->
 		rect = canvas.getBoundingClientRect()
