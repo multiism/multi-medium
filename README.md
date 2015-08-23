@@ -14,14 +14,13 @@ See a [demo](http://multiism.github.io/multi-medium/).
 	* A metaphorical hyphen gesture
 	* Or automatically give your room when you near the edge
 	* Shift the word off left with an animation (and continue showing part of it)
-* Handwriting conversion mode (writing out existing text)
-	* Next word button
-	* Easily export the data for persistence (paste into html)
+* Next word button for Handwriting conversion (writing out existing text)
 * Freewriting mode / WYSIWYG editor
 * Establish API boundaries
 * jQuery-plugin-like API
 	* And actual jQuery plugin, why not (but no dependency)
 * Publish to npm
+* Thin out the stroke points when recording
 * Use scalable vector graphics
 * Optimize?
 * Fix triple-clicking a paragraph to select it

@@ -2,7 +2,31 @@
 all_spanvases = []
 selected_spanvas = null
 the_input = null
-_mm_id_counter = 0
+savings = document.createElement "div"
+savings.style.position = "fixed"
+savings.style.top = "5px"
+savings.style.right = "5px"
+savings.style.background = "white"
+savings.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.3)"
+savings.style.borderRadius = "2px"
+savings.style.padding = "4px"
+save_button = document.createElement "button"
+save_button.innerText = "Save"
+save_button.addEventListener "click", (e)->
+	datas =
+		for spanvas in all_spanvases
+			if spanvas.hasData() then serialize_strokes spanvas.getData().strokes else null
+	label = document.createElement "label"
+	label.innerHTML = "Paste the following into a <code>&lt;script&gt;</code>:<br>"
+	textarea = document.createElement "textarea"
+	textarea.value = "MultiMedium.setData(#{JSON.stringify datas});"
+	textarea.style.width = "100%"
+	textarea.style.boxSizing = "border-box"
+	savings.removeChild save_button
+	savings.appendChild label
+	label.appendChild textarea
+	textarea.select()
+savings.appendChild save_button
 
 serialize_strokes = (strokes)->
 	# console.log "serialize_strokes", strokes
@@ -67,6 +91,9 @@ Spanvas = (word, data)->
 	spanvas.hasData = ->
 		if strokes then yes else no
 	
+	spanvas.getData = ->
+		{strokes}
+	
 	spanvas.setData = (data)->
 		{strokes} = data
 		# if strokes?.length
@@ -124,11 +151,10 @@ Spanvas = (word, data)->
 	
 	setTimeout ->
 		spanvas.setData data if data
-		json = localStorage["multi-medium:#{spanvas._mm_id}:strokes"]
+		json = localStorage["multi-medium:#{all_spanvases.indexOf spanvas}:strokes"]
 		if json
 			spanvas.setData {strokes: deserialize_strokes JSON.parse json}
 	
-	spanvas._mm_id = ++_mm_id_counter
 	all_spanvases.push spanvas
 	spanvas
 
@@ -202,7 +228,11 @@ Spanvas = (word, data)->
 	update = ->
 		render()
 		selected_spanvas.setData {strokes}
-		localStorage["multi-medium:#{selected_spanvas._mm_id}:strokes"] = JSON.stringify serialize_strokes strokes
+		# @HACK
+		document.body.appendChild savings
+		savings.innerHTML = ""
+		savings.appendChild save_button
+		localStorage["multi-medium:#{all_spanvases.indexOf selected_spanvas}:strokes"] = JSON.stringify serialize_strokes strokes
 	
 	clear = ->
 		pointers = {}
@@ -295,3 +325,7 @@ Spanvas = (word, data)->
 	the_input.clear = clear
 	
 	element
+
+@MultiMedium.setData = (datas)->
+	for data, i in datas
+		all_spanvases[i].setData data if data
