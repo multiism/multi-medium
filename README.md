@@ -20,9 +20,9 @@ See a [demo](http://multiism.github.io/multi-medium/).
 * jQuery-plugin-like API
 	* And actual jQuery plugin, why not (but no dependency)
 * Publish to npm
-* Thin out the stroke points when recording
 * Use scalable vector graphics
 * Optimize?
 * Fix triple-clicking a paragraph to select it
 * Hide text underneath canvases when selecting? Or hide canvases?
 * Support other languages better
+* Replace lorem ipsum on demo

@@ -292,8 +292,15 @@ Spanvas = (word, data)->
 		pointer = pointers[e.pointerId]
 		if pointer
 			e.preventDefault()
-			pointer.stroke.points.push point_for e
-			update()
+			np = point_for e
+			pp = pointer.stroke.points[pointer.stroke.points.length - 1]
+			dx = np.x - pp.x
+			dy = np.y - pp.y
+			# @TODO: extend last point if the angle from the last point to np would be
+			# very similar to the angle between the point before last and the last point?
+			if Math.sqrt(dx*dx + dy*dy) > 0.02
+				pointer.stroke.points.push np
+				update()
 	
 	window.addEventListener "pointerup", (e)->
 		delete pointers[e.pointerId]
