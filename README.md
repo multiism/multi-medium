@@ -17,7 +17,6 @@ See a [demo](http://multiism.github.io/multi-medium/).
 * Handwriting conversion mode (writing out existing text)
 	* Next word button
 	* Easily export the data for persistence (paste into html)
-	* Save to `localStorage`
 * Freewriting mode / WYSIWYG editor
 * Establish API boundaries
 * jQuery-plugin-like API

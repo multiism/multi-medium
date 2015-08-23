@@ -2,6 +2,7 @@
 all_spanvases = []
 selected_spanvas = null
 the_input = null
+_mm_id_counter = 0
 
 serialize_strokes = (strokes)->
 	# console.log "serialize_strokes", strokes
@@ -123,7 +124,11 @@ Spanvas = (word, data)->
 	
 	setTimeout ->
 		spanvas.setData data if data
+		json = localStorage["multi-medium:#{spanvas._mm_id}:strokes"]
+		if json
+			spanvas.setData {strokes: deserialize_strokes JSON.parse json}
 	
+	spanvas._mm_id = ++_mm_id_counter
 	all_spanvases.push spanvas
 	spanvas
 
@@ -197,6 +202,7 @@ Spanvas = (word, data)->
 	update = ->
 		render()
 		selected_spanvas.setData {strokes}
+		localStorage["multi-medium:#{selected_spanvas._mm_id}:strokes"] = JSON.stringify serialize_strokes strokes
 	
 	clear = ->
 		pointers = {}
