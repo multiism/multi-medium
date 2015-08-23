@@ -150,7 +150,7 @@ Spanvas = (word, data)->
 			spanvas.setStyle style
 			spanvas.render()
 	
-	setTimeout render, 1
+	setTimeout render
 	
 	element
 
@@ -166,38 +166,23 @@ Spanvas = (word, data)->
 	update_dimensions = ->
 		element_style = getComputedStyle element
 		canvas_style = getComputedStyle canvas
-		pl = parseInt element_style.paddingLeft
-		pr = parseInt element_style.paddingRight
-		pt = parseInt element_style.paddingTop
-		pb = parseInt element_style.paddingBottom
-		pl = 0 if isNaN pl
-		pr = 0 if isNaN pr
-		pt = 0 if isNaN pt
-		pb = 0 if isNaN pb
-		cpl = parseInt canvas_style.paddingLeft
-		cpr = parseInt canvas_style.paddingRight
-		cpt = parseInt canvas_style.paddingTop
-		cpb = parseInt canvas_style.paddingBottom
-		cpl = 0 if isNaN cpl
-		cpr = 0 if isNaN cpr
-		cpt = 0 if isNaN cpt
-		cpb = 0 if isNaN cpb
-		cml = parseInt canvas_style.marginLeft
-		cmr = parseInt canvas_style.marginRight
-		cmt = parseInt canvas_style.marginTop
-		cmb = parseInt canvas_style.marginBottom
-		cml = 0 if isNaN cml
-		cmr = 0 if isNaN cmr
-		cmt = 0 if isNaN cmt
-		cmb = 0 if isNaN cmb
-		cbl = parseInt canvas_style.borderLeft
-		cbr = parseInt canvas_style.borderRight
-		cbt = parseInt canvas_style.borderTop
-		cbb = parseInt canvas_style.borderBottom
-		cbl = 0 if isNaN cbl
-		cbr = 0 if isNaN cbr
-		cbt = 0 if isNaN cbt
-		cbb = 0 if isNaN cbb
+		_ = (v)-> if isNaN v then 0 else parseInt v
+		pl = _ element_style.paddingLeft
+		pr = _ element_style.paddingRight
+		pt = _ element_style.paddingTop
+		pb = _ element_style.paddingBottom
+		cpl = _ canvas_style.paddingLeft
+		cpr = _ canvas_style.paddingRight
+		cpt = _ canvas_style.paddingTop
+		cpb = _ canvas_style.paddingBottom
+		cml = _ canvas_style.marginLeft
+		cmr = _ canvas_style.marginRight
+		cmt = _ canvas_style.marginTop
+		cmb = _ canvas_style.marginBottom
+		cbl = _ canvas_style.borderLeft
+		cbr = _ canvas_style.borderRight
+		cbt = _ canvas_style.borderTop
+		cbb = _ canvas_style.borderBottom
 		canvas.width = element.clientWidth - pl - pr - cml - cmr - cpl - cpr - cbl - cbr
 		canvas.height = element.clientHeight - pt - pb - cmt - cmb - cpt - cpb - cbt - cbb
 		# WOW, THAT'S A LITTLE BIT UBSURD, DON'T YOU THINK?
@@ -283,9 +268,6 @@ Spanvas = (word, data)->
 			strokes.splice strokes.indexOf(pointer.stroke), 1
 		delete pointers[e.pointerId]
 	
-	# button = null
-	# element.appendChild button
-	
 	# @TODO: localize this event listener
 	window.addEventListener "keydown", (e)->
 		if e.ctrlKey and not (e.metaKey or e.altKey)
@@ -294,17 +276,16 @@ Spanvas = (word, data)->
 			if e.keyCode is 89 # Y
 				redo()
 	
-	setTimeout update_dimensions, 1
+	setTimeout update_dimensions
 	window.addEventListener "resize", update_dimensions
 	
-	element.clear = clear
+	setTimeout ->
+		for spanvas in all_spanvases when not spanvas.hasData()
+			spanvas.select()
+			break
 	
 	if the_input then alert "Multiple MultiMedium.Inputs aren't exactly supported (for a silly reason)"
 	the_input = element
+	the_input.clear = clear
+	
 	element
-
-setTimeout ->
-	for spanvas in all_spanvases when not spanvas.hasData()
-		spanvas.select()
-		break
-, 100
