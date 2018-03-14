@@ -29,7 +29,6 @@ save_button.addEventListener "click", (e)->
 savings.appendChild save_button
 
 serialize_strokes = (strokes)->
-	# console.log "serialize_strokes", strokes
 	resolution = 1000
 	for {points} in strokes
 		a = []
@@ -41,7 +40,6 @@ serialize_strokes = (strokes)->
 		a
 
 deserialize_strokes = (strokes)->
-	# console.log "deserialize_strokes", strokes
 	for coords in strokes
 		points: for i in [0...coords.length] by 2
 			{x: coords[i], y: coords[i+1]}
@@ -66,7 +64,6 @@ Spanvas = (word, data)->
 	style = null
 	
 	spanvas.deselect = ->
-		# spanvas.classList.remove "selected"
 		spanvas.removeAttribute "tabIndex"
 		spanvas.render()
 		selected_spanvas = null
@@ -75,7 +72,6 @@ Spanvas = (word, data)->
 	spanvas.select = ->
 		selected_spanvas?.deselect()
 		selected_spanvas = spanvas
-		# spanvas.classList.add "selected"
 		spanvas.render()
 		the_input?.clear()
 		spanvas.setAttribute "tabIndex", "0"
@@ -86,20 +82,18 @@ Spanvas = (word, data)->
 		, once: yes
 	
 	spanvas.hasData = ->
-		if strokes then yes else no
+		strokes?
 	
 	spanvas.getData = ->
 		{strokes}
 	
 	spanvas.setData = (data)->
 		{strokes} = data
-		# if strokes?.length
-		# 	spanvas.setAttribute("data-handwriting", JSON.stringify([{strokes: serialize_strokes(strokes)}]))
 		spanvas.render()
 	
 	spanvas.setStyle = (new_style)->
 		style = new_style
-		# XXX: inconsistency: setData rerenders but setStyle doesn't
+		spanvas.render()
 	
 	original_width = null
 	spanvas.render = ->
@@ -142,10 +136,8 @@ Spanvas = (word, data)->
 			ctx.restore()
 			
 			spanvas.style.color = "transparent"
-			# canvas.style.top = "#{y_offset}px"
 			canvas.style.left = "#{-padding}px"
 			canvas.style.top = "#{y_offset - padding}px"
-			# canvas.style.top = "#{-padding}px"
 			
 			canvas_text_width = canvas.width - padding * 2
 			spanvas.style.letterSpacing = "#{Math.max(-8, (canvas_text_width - original_width) / word.length)}px"
@@ -169,7 +161,6 @@ Spanvas = (word, data)->
 			data = handwriting_data?[i]
 			if data
 				strokes = deserialize_strokes data.strokes
-				# console.log "deserialized as", strokes
 			spanvas = Spanvas word, {strokes}
 			element.appendChild spanvas
 			unless i + 1 is words.length
@@ -180,10 +171,8 @@ Spanvas = (word, data)->
 		style = getComputedStyle element
 		for spanvas in spanvases
 			spanvas.setStyle style
-			spanvas.render()
 	
-	setTimeout render
-	# TODO: this should probably be requestAnimationFrame render
+	requestAnimationFrame render
 	
 	element
 
@@ -219,7 +208,8 @@ Spanvas = (word, data)->
 		canvas.width = element.clientWidth - pl - pr - cml - cmr - cpl - cpr - cbl - cbr
 		canvas.height = element.clientHeight - pt - pb - cmt - cmb - cpt - cpb - cbt - cbb
 		# WOW, THAT'S A LITTLE BIT ABSURD, DON'T YOU THINK?
-		# can I not use scrollWidth/scrollHeight?
+		# can I not use scrollWidth/scrollHeight to remove at least some of those?
+		# (this code is trying to handle extreme cases not present in the demo btw)
 		# console.log "absurdity test", element.clientWidth, element.scrollWidth, canvas.width
 
 		render()
@@ -292,13 +282,6 @@ Spanvas = (word, data)->
 		pointers[e.pointerId] = {stroke, type: e.pointerType}
 		strokes.push stroke
 		update()
-		# window.addEventListener "click", one_off_click_prevent = (e)->
-		# 	e.preventDefault()
-		# 	console.log "prevent click!"
-		# 	window.removeEventListener "click", one_off_click_prevent
-	canvas.addEventListener "mousedown", (e)->
-		e.preventDefault()
-		console.log "prevent mousedown"
 	
 	window.addEventListener "pointermove", (e)->
 		pointer = pointers[e.pointerId]
@@ -324,20 +307,10 @@ Spanvas = (word, data)->
 		delete pointers[e.pointerId]
 	
 	window.addEventListener "click", (e)->
-		# console.log "click", e.defaultPrevented
-		# return if e.defaultPrevented
 		spanvas = e.target.closest(".multi-medium-word")
-		# console.log e.target
-		if spanvas
-			spanvas.select()
-		# else
-		# 	# deselect if you click off of any spanvases
-		# 	# but NOT if you started dragging from the Input canvas!
-		# 	console.log Object.keys(pointers)
-		# 	unless Object.keys(pointers).length
-		# 		selected_spanvas?.deselect()
+		spanvas?.select()
 	
-	document.body.classList.add("multi-medium-edit-mode")
+	document.body.classList.add("multi-medium-edit-mode") # for cursor: pointer
 
 	# @TODO: localize this event listener
 	window.addEventListener "keydown", (e)->
@@ -347,10 +320,10 @@ Spanvas = (word, data)->
 			if e.keyCode is 89 # Y
 				redo()
 	
-	setTimeout update_dimensions
+	requestAnimationFrame update_dimensions
 	window.addEventListener "resize", update_dimensions
 	
-	setTimeout ->
+	requestAnimationFrame ->
 		for spanvas in all_spanvases when not spanvas.hasData()
 			spanvas.select()
 			break
@@ -380,7 +353,7 @@ Spanvas = (word, data)->
 	ctx.beginPath()
 	for {points} in strokes
 		ctx.moveTo(points[0].x*scale, points[0].y*scale)
-		ctx.lineTo(points[0].x*scale, points[0].y*scale+0.01) if points.length is 1
+		ctx.lineTo(points[0].x*scale, points[0].y*scale+0.01) if points.length is 1 # make single points visible
 		ctx.lineTo(point.x*scale, point.y*scale) for point in points
 	ctx.stroke()
 
