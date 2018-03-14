@@ -59,25 +59,31 @@ Spanvas = (word, data)->
 	canvas.style.left = "0"
 	canvas.style.top = "0"
 	
-	# TODO: have this be a "mode" or enable it when creating the Input
-	spanvas.style.cursor = "pointer"
-	# TODO: handle this higher up (globally), and deselect if you click off of any spanvases
-	spanvas.addEventListener "click", (e)->
-		spanvas.select()
-	
 	spanvas.appendChild document.createTextNode word
 	spanvas.appendChild canvas
 	
 	strokes = null
 	style = null
 	
-	spanvas.select = ->
-		selected_spanvas?.classList.remove "selected"
-		selected_spanvas?.render()
-		selected_spanvas = spanvas
-		selected_spanvas.classList.add "selected"
-		selected_spanvas.render()
+	spanvas.deselect = ->
+		# spanvas.classList.remove "selected"
+		spanvas.removeAttribute "tabIndex"
+		spanvas.render()
+		selected_spanvas = null
 		the_input?.clear()
+	
+	spanvas.select = ->
+		selected_spanvas?.deselect()
+		selected_spanvas = spanvas
+		# spanvas.classList.add "selected"
+		spanvas.render()
+		the_input?.clear()
+		spanvas.setAttribute "tabIndex", "0"
+		# TODO: left/right/up/down caret-like movement for going between words (or at least left/right for previous/next word)
+		spanvas.focus()
+		spanvas.addEventListener "focusout", (e)->
+			spanvas.deselect()
+		, once: yes
 	
 	spanvas.hasData = ->
 		if strokes then yes else no
@@ -261,7 +267,7 @@ Spanvas = (word, data)->
 		ctx.clearRect 0, 0, canvas.width, canvas.height
 		ctx.fillStyle = "rgba(100, 100, 100, 0.1)"
 		ctx.font = "#{baseline}px sans-serif"
-		selected_word = selected_spanvas?.textContent ? selected_spanvas?.innerText
+		selected_word = selected_spanvas?.textContent ? selected_spanvas?.innerText ? ""
 		ctx.fillText selected_word, 20, baseline
 		ctx.strokeStyle = element_style?.color
 		ctx.lineWidth = 10
@@ -286,6 +292,13 @@ Spanvas = (word, data)->
 		pointers[e.pointerId] = {stroke, type: e.pointerType}
 		strokes.push stroke
 		update()
+		# window.addEventListener "click", one_off_click_prevent = (e)->
+		# 	e.preventDefault()
+		# 	console.log "prevent click!"
+		# 	window.removeEventListener "click", one_off_click_prevent
+	canvas.addEventListener "mousedown", (e)->
+		e.preventDefault()
+		console.log "prevent mousedown"
 	
 	window.addEventListener "pointermove", (e)->
 		pointer = pointers[e.pointerId]
@@ -310,6 +323,22 @@ Spanvas = (word, data)->
 			strokes.splice strokes.indexOf(pointer.stroke), 1
 		delete pointers[e.pointerId]
 	
+	window.addEventListener "click", (e)->
+		# console.log "click", e.defaultPrevented
+		# return if e.defaultPrevented
+		spanvas = e.target.closest(".multi-medium-word")
+		# console.log e.target
+		if spanvas
+			spanvas.select()
+		# else
+		# 	# deselect if you click off of any spanvases
+		# 	# but NOT if you started dragging from the Input canvas!
+		# 	console.log Object.keys(pointers)
+		# 	unless Object.keys(pointers).length
+		# 		selected_spanvas?.deselect()
+	
+	document.body.classList.add("multi-medium-edit-mode")
+
 	# @TODO: localize this event listener
 	window.addEventListener "keydown", (e)->
 		if e.ctrlKey and not (e.metaKey or e.altKey)
