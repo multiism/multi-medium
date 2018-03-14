@@ -141,6 +141,8 @@ Spanvas = (word, data)->
 			
 			canvas_text_width = canvas.width - padding * 2
 			spanvas.style.letterSpacing = "#{Math.max(-8, (canvas_text_width - original_width) / word.length)}px"
+		
+		return
 	
 	setTimeout ->
 		spanvas.setData data if data?.strokes
@@ -171,6 +173,7 @@ Spanvas = (word, data)->
 		style = getComputedStyle element
 		for spanvas in spanvases
 			spanvas.setStyle style
+		return
 	
 	requestAnimationFrame render
 	
@@ -337,6 +340,7 @@ Spanvas = (word, data)->
 @MultiMedium.setData = (datas)->
 	for data, i in datas
 		all_spanvases[i].setData {strokes: deserialize_strokes(data)} if data
+	return
 
 @MultiMedium.rerender = ->
 	# NOTE: MultiMedium.rerender is not needed when calling MultiMedium.setData
@@ -344,6 +348,7 @@ Spanvas = (word, data)->
 	# TODO: re-calculate original width of the text
 	for spanvas in all_spanvases
 		spanvas.render()
+	return
 
 
 # for override
