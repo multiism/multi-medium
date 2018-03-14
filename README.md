@@ -15,8 +15,9 @@ Hm, the words seem to be really close together, needs some word spacing.
 
 * Undo/redo buttons for mobile
 * A way to clear or reset individual words
-* For some reason the save button exported only changed words, so now I have two `setData` calls in `demo.coffee`; this *works*, but 
-* You should be able to save without changing anything (especially because of that just-described problem); currently it only pops up if you change something and you can only change something by rewriting at least one word
+* For some reason the save button seemed to export only changed words, so I ended up putting two `setData` calls in `demo.coffee`; I've since replaced it, but, idk, it should probably be investigated
+* Better serialization format, especially since CoffeeScript gives a maximum callstack error trying to parse the data I have in `demo.coffee` currently; I had to wrap it in a `JSON.parse` call; it should really be a lot more compact than JSON, and shouldn't rely on the language the API is called from so much (serializing to nested JS data structures; it should just be a string instead)
+* You should be able to save without changing anything; currently the Save option only pops up if you change something and you have to rewrite at least one word when changing something
 * Diffs?
 * Record longer words
 	* A metaphorical hyphen gesture
