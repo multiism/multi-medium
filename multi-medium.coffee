@@ -46,17 +46,6 @@ deserialize_strokes = (strokes)->
 		points: for i in [0...coords.length] by 2
 			{x: coords[i], y: coords[i+1]}
 
-draw_strokes = (strokes, ctx, scale=1)->
-	ctx.lineJoin = "round"
-	ctx.lineCap = "round"
-	ctx.beginPath()
-	for {points} in strokes
-		ctx.moveTo(points[0].x*scale, points[0].y*scale)
-		ctx.lineTo(points[0].x*scale, points[0].y*scale+0.01) if points.length is 1
-		ctx.lineTo(point.x*scale, point.y*scale) for point in points
-		ctx.points
-	ctx.stroke()
-
 Spanvas = (word, data)->
 	spanvas = document.createElement "span"
 	spanvas.style.position = "relative"
@@ -70,7 +59,9 @@ Spanvas = (word, data)->
 	canvas.style.left = "0"
 	canvas.style.top = "0"
 	
+	# TODO: have this be a "mode" or enable it when creating the Input
 	spanvas.style.cursor = "pointer"
+	# TODO: handle this higher up (globally), and deselect if you click off of any spanvases
 	spanvas.addEventListener "click", (e)->
 		spanvas.select()
 	
@@ -102,6 +93,7 @@ Spanvas = (word, data)->
 	
 	spanvas.setStyle = (new_style)->
 		style = new_style
+		# XXX: inconsistency: setData rerenders but setStyle doesn't
 	
 	original_width = null
 	spanvas.render = ->
@@ -109,14 +101,13 @@ Spanvas = (word, data)->
 		original_width ?= rect.width
 		canvas.style.display = "inline-block"
 		ctx = canvas.getContext "2d"
-		
 		if strokes
 			scale = rect.height
 			
 			weight = switch style?.fontWeight
 				when "normal" then 400
 				when "bold" then 700
-				else style?.fontWeight
+				else style?.fontWeight ? 400
 			
 			line_width = 1 + (parseInt(weight) / 400 * scale / 30)
 			
@@ -131,7 +122,8 @@ Spanvas = (word, data)->
 					max_y = Math.max(max_y, point.y)
 					min_y = Math.min(min_y, point.y)
 			
-			padding = line_width * 2
+			padding = MultiMedium.getPadding(line_width)
+			
 			y_offset = ~~Math.min(0, min_y * scale)
 			canvas.width = (max_x - min_x) * scale + padding * 2
 			canvas.height = Math.max(rect.height, max_y * scale - y_offset + padding * 2)
@@ -140,17 +132,20 @@ Spanvas = (word, data)->
 			ctx.strokeStyle = style?.color
 			ctx.save()
 			ctx.translate(-min_x * scale + padding, -y_offset + padding)
-			draw_strokes strokes, ctx, scale
+			MultiMedium.drawStrokes strokes, ctx, scale
 			ctx.restore()
 			
 			spanvas.style.color = "transparent"
-			canvas.style.top = "#{y_offset}px"
+			# canvas.style.top = "#{y_offset}px"
+			canvas.style.left = "#{-padding}px"
+			canvas.style.top = "#{y_offset - padding}px"
+			# canvas.style.top = "#{-padding}px"
 			
-			if canvas.width isnt rect.width
-				spanvas.style.letterSpacing = "#{Math.max(-8, (canvas.width - original_width) / word.length)}px"
+			canvas_text_width = canvas.width - padding * 2
+			spanvas.style.letterSpacing = "#{Math.max(-8, (canvas_text_width - original_width) / word.length)}px"
 	
 	setTimeout ->
-		spanvas.setData data if data
+		spanvas.setData data if data?.strokes
 		json = localStorage["multi-medium:#{all_spanvases.indexOf spanvas}:strokes"]
 		if json
 			spanvas.setData {strokes: deserialize_strokes JSON.parse json}
@@ -182,6 +177,7 @@ Spanvas = (word, data)->
 			spanvas.render()
 	
 	setTimeout render
+	# TODO: this should probably be requestAnimationFrame render
 	
 	element
 
@@ -216,8 +212,10 @@ Spanvas = (word, data)->
 		cbb = _ canvas_style.borderBottom
 		canvas.width = element.clientWidth - pl - pr - cml - cmr - cpl - cpr - cbl - cbr
 		canvas.height = element.clientHeight - pt - pb - cmt - cmb - cpt - cpb - cbt - cbb
-		# WOW, THAT'S A LITTLE BIT UBSURD, DON'T YOU THINK?
-		
+		# WOW, THAT'S A LITTLE BIT ABSURD, DON'T YOU THINK?
+		# can I not use scrollWidth/scrollHeight?
+		# console.log "absurdity test", element.clientWidth, element.scrollWidth, canvas.width
+
 		render()
 	
 	pointers = {}
@@ -227,12 +225,13 @@ Spanvas = (word, data)->
 	
 	update = ->
 		render()
-		selected_spanvas.setData {strokes}
-		# @HACK
-		document.body.appendChild savings
-		savings.innerHTML = ""
-		savings.appendChild save_button
-		localStorage["multi-medium:#{all_spanvases.indexOf selected_spanvas}:strokes"] = JSON.stringify serialize_strokes strokes
+		if selected_spanvas?
+			selected_spanvas.setData {strokes}
+			# @HACK
+			document.body.appendChild savings
+			savings.innerHTML = ""
+			savings.appendChild save_button
+			localStorage["multi-medium:#{all_spanvases.indexOf selected_spanvas}:strokes"] = JSON.stringify serialize_strokes strokes
 	
 	clear = ->
 		pointers = {}
@@ -266,7 +265,7 @@ Spanvas = (word, data)->
 		ctx.fillText selected_word, 20, baseline
 		ctx.strokeStyle = element_style?.color
 		ctx.lineWidth = 10
-		draw_strokes strokes, ctx, canvas.height
+		MultiMedium.drawStrokes strokes, ctx, canvas.height
 	
 	point_for = (e)->
 		rect = canvas.getBoundingClientRect()
@@ -335,4 +334,27 @@ Spanvas = (word, data)->
 
 @MultiMedium.setData = (datas)->
 	for data, i in datas
-		all_spanvases[i].setData data if data
+		all_spanvases[i].setData {strokes: deserialize_strokes(data)} if data
+
+@MultiMedium.rerender = ->
+	# NOTE: MultiMedium.rerender is not needed when calling MultiMedium.setData
+
+	# TODO: re-calculate original width of the text
+	for spanvas in all_spanvases
+		spanvas.render()
+
+
+# for override
+@MultiMedium.drawStrokes = (strokes, ctx, scale=1)->
+	ctx.lineJoin = "round"
+	ctx.lineCap = "round"
+	ctx.beginPath()
+	for {points} in strokes
+		ctx.moveTo(points[0].x*scale, points[0].y*scale)
+		ctx.lineTo(points[0].x*scale, points[0].y*scale+0.01) if points.length is 1
+		ctx.lineTo(point.x*scale, point.y*scale) for point in points
+	ctx.stroke()
+
+# for override
+@MultiMedium.getPadding = (line_width)->
+	line_width * 2
