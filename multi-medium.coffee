@@ -312,6 +312,9 @@ Spanvas = (word, data)->
 	window.addEventListener "click", (e)->
 		spanvas = e.target.closest(".multi-medium-word")
 		spanvas?.select()
+		# unless e.ctrlKey or e.altKey or e.metaKey
+		# 	e.preventDefault() # prevent following links
+		# TODO: prevent following links in edit mode
 	
 	document.body.classList.add("multi-medium-edit-mode") # for cursor: pointer
 
