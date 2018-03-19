@@ -2,7 +2,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MultiMedium</title>
-<script src="https://code.jquery.com/pep/0.3.0/pep.js"></script>
+<script src="https://code.jquery.com/pep/0.3.0/pep.js" integrity="sha384-N5/H2Rqjj4diop/pmXEM2QA3OLIBRgkOqdTsYaLfqA0jYACBbb/xmL4kPRXzYcW1" crossorigin="anonymous"></script>
+<script>
+	if (typeof PointerEventsPolyfill == 'undefined') {
+		document.write('<script src="demo/lib/pep.js"><\/script>');
+	}
+</script>
 <script src="multi-medium.coffee" type="text/coffeescript"></script>
 <script src="demo/demo.coffee" type="text/coffeescript"></script>
 <script src="demo/lib/coffeescript.js"></script>
