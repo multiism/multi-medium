@@ -1,5 +1,5 @@
 
-# <span style="font-family: 'Seoge Print', 'Seoge Script', 'Seoge', cursive">MultiMedium</span>
+# ![MultiMedium](rough-logo.png)
 
 A new version of the handwriting medium, for the web.
 
