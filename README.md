@@ -1,15 +1,17 @@
 
-# ![MultiMedium](rough-logo.png)
+# [![MultiMedium](rough-logo.png)][demo]
 
 A new version of the handwriting medium, for the web.
 
 Write more personally, while still supporting selection, copy and paste, and screen reader accessibility.
 (If you want the aural form of your content to be personal, record it! It would also be cool to be able to line that up with the text easily.)
 
-[See a demo.](http://multiism.github.io/multi-medium/)
+[See a demo.][demo]
 Hm, the words seem to be really close together, needs some word spacing.
 
 [See this page on my website for some "styled" text.](http://isaiahodhner.ml/make-making-better)
+
+[demo]: http://multiism.github.io/multi-medium/
 
 ## TODO
 
