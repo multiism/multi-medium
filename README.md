@@ -9,7 +9,7 @@ Write more personally, while still supporting selection, copy and paste, and scr
 [See a demo.](http://multiism.github.io/multi-medium/)
 Hm, the words seem to be really close together, needs some word spacing.
 
-[See this page on my website for some "styled" text.](http://website-a1j01.c9users.io/make-making-better)
+[See this page on my website for some "styled" text.](http://isaiahodhner.ml/make-making-better)
 
 ## TODO
 
