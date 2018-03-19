@@ -1,11 +1,11 @@
 {
   "name": "multi-medium",
   "version": "0.0.0",
-  "description": "Write.",
-  "dependencies": {
-    "coffee-script": "^1.9.3"
-  },
+  "description": "Handwriting, for the web.",
   "scripts": {
     "prepublish": "coffee -co . ."
+  },
+  "devDependencies": {
+    "coffeescript": "^2.2.3"
   }
 }
