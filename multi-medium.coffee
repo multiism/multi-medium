@@ -13,9 +13,8 @@ savings.style.padding = "4px"
 save_button = document.createElement "button"
 save_button.innerText = "Save"
 save_button.addEventListener "click", (e)->
-	datas =
-		for spanvas in all_spanvases
-			if spanvas.hasData() then serialize_strokes spanvas.getData().strokes else null
+	datas = all_spanvases.map (spanvas)->
+		if spanvas.hasData() then serialize_strokes spanvas.getData().strokes else null
 	label = document.createElement "label"
 	label.innerHTML = "Paste the following into a <code>&lt;script&gt;</code>:<br>"
 	textarea = document.createElement "textarea"
@@ -31,17 +30,17 @@ savings.appendChild save_button
 
 serialize_strokes = (strokes)->
 	resolution = 1000
-	for {points} in strokes
-		a = []
+	strokes.map ({points})->
+		flattened_coords = []
 		for point in points
-			a.push(
+			flattened_coords.push(
 				(~~(point.x * resolution)) / resolution
 				(~~(point.y * resolution)) / resolution
 			)
-		a
+		flattened_coords
 
 deserialize_strokes = (strokes)->
-	for coords in strokes
+	strokes.map (coords)->
 		points: for i in [0...coords.length] by 2
 			{x: coords[i], y: coords[i+1]}
 
@@ -163,16 +162,16 @@ Spanvas = (word, data)->
 	element = document.createElement "span"
 	words = text.split " "
 
-	spanvases =
-		for word, i in words
-			data = handwriting_data?[i]
-			if data
-				strokes = deserialize_strokes data.strokes
-			spanvas = Spanvas word, {strokes}
-			element.appendChild spanvas
-			unless i + 1 is words.length
-				element.appendChild document.createTextNode " "
-			spanvas
+	spanvases = []
+	for word, i in words
+		data = handwriting_data?[i]
+		if data
+			strokes = deserialize_strokes data.strokes
+		spanvas = Spanvas word, {strokes}
+		element.appendChild spanvas
+		unless i + 1 is words.length
+			element.appendChild document.createTextNode " "
+		spanvases.push(spanvas)
 
 	render = ->
 		style = getComputedStyle element
