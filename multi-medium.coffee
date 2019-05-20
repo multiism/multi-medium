@@ -26,6 +26,7 @@ save_button.addEventListener "click", (e)->
 	savings.appendChild label
 	label.appendChild textarea
 	textarea.select()
+	return
 savings.appendChild save_button
 
 serialize_strokes = (strokes)->
@@ -56,19 +57,20 @@ Spanvas = (word, data)->
 	canvas.style.position = "absolute"
 	canvas.style.left = "0"
 	canvas.style.top = "0"
-	
+
 	spanvas.appendChild document.createTextNode word
 	spanvas.appendChild canvas
-	
+
 	strokes = null
 	style = null
-	
+
 	spanvas.deselect = ->
 		spanvas.removeAttribute "tabIndex"
 		spanvas.render()
 		selected_spanvas = null
 		the_input?.clear()
-	
+		return
+
 	spanvas.select = ->
 		selected_spanvas?.deselect()
 		selected_spanvas = spanvas
@@ -80,21 +82,24 @@ Spanvas = (word, data)->
 		spanvas.addEventListener "focusout", (e)->
 			spanvas.deselect()
 		, once: yes
-	
+		return
+
 	spanvas.hasData = ->
 		strokes?
-	
+
 	spanvas.getData = ->
 		{strokes}
-	
+
 	spanvas.setData = (data)->
 		{strokes} = data
 		spanvas.render()
-	
+		return
+
 	spanvas.setStyle = (new_style)->
 		style = new_style
 		spanvas.render()
-	
+		return
+
 	original_width = null
 	spanvas.render = ->
 		rect = spanvas.getBoundingClientRect()
@@ -103,14 +108,14 @@ Spanvas = (word, data)->
 		ctx = canvas.getContext "2d"
 		if strokes
 			scale = rect.height
-			
+
 			weight = switch style?.fontWeight
 				when "normal" then 400
 				when "bold" then 700
 				else style?.fontWeight ? 400
-			
+
 			line_width = 1 + (parseInt(weight) / 400 * scale / 30)
-			
+
 			max_x = 0
 			min_x = Infinity
 			max_y = 0
@@ -121,43 +126,43 @@ Spanvas = (word, data)->
 					min_x = Math.min(min_x, point.x)
 					max_y = Math.max(max_y, point.y)
 					min_y = Math.min(min_y, point.y)
-			
+
 			padding = MultiMedium.getPadding(line_width)
-			
+
 			y_offset = ~~Math.min(0, min_y * scale)
 			canvas.width = (max_x - min_x) * scale + padding * 2
 			canvas.height = Math.max(rect.height, max_y * scale - y_offset + padding * 2)
-			
+
 			ctx.lineWidth = line_width
 			ctx.strokeStyle = style?.color
 			ctx.save()
 			ctx.translate(-min_x * scale + padding, -y_offset + padding)
 			MultiMedium.drawStrokes strokes, ctx, scale
 			ctx.restore()
-			
+
 			spanvas.style.color = "transparent"
 			canvas.style.left = "#{-padding}px"
 			canvas.style.top = "#{y_offset - padding}px"
-			
+
 			canvas_text_width = canvas.width - padding * 2
 			spanvas.style.letterSpacing = "#{Math.max(-8, (canvas_text_width - original_width) / word.length)}px"
-		
 		return
-	
+
 	setTimeout ->
 		spanvas.setData data if data?.strokes
 		json = localStorage["multi-medium:#{all_spanvases.indexOf spanvas}:strokes"]
 		if json
 			spanvas.setData {strokes: deserialize_strokes JSON.parse json}
-	
+		return
+
 	all_spanvases.push spanvas
-	spanvas
+	return spanvas
 
 
 @MultiMedium = (text, handwriting_data)->
 	element = document.createElement "span"
 	words = text.split " "
-	
+
 	spanvases =
 		for word, i in words
 			data = handwriting_data?[i]
@@ -168,15 +173,15 @@ Spanvas = (word, data)->
 			unless i + 1 is words.length
 				element.appendChild document.createTextNode " "
 			spanvas
-	
+
 	render = ->
 		style = getComputedStyle element
 		for spanvas in spanvases
 			spanvas.setStyle style
 		return
-	
+
 	requestAnimationFrame render
-	
+
 	element
 
 @MultiMedium.Input = ->
@@ -186,7 +191,7 @@ Spanvas = (word, data)->
 	canvas.setAttribute "touch-action", "none"
 	ctx = canvas.getContext "2d"
 	element.appendChild canvas
-	
+
 	element_style = null
 	update_dimensions = ->
 		element_style = getComputedStyle element
@@ -216,12 +221,13 @@ Spanvas = (word, data)->
 		# console.log "absurdity test", element.clientWidth, element.scrollWidth, canvas.width
 
 		render()
-	
+		return
+
 	pointers = {}
 	strokes = []
 	undoes = []
 	redoes = []
-	
+
 	update = ->
 		render()
 		if selected_spanvas?
@@ -231,30 +237,35 @@ Spanvas = (word, data)->
 			savings.innerHTML = ""
 			savings.appendChild save_button
 			localStorage["multi-medium:#{all_spanvases.indexOf selected_spanvas}:strokes"] = JSON.stringify serialize_strokes strokes
-	
+		return
+
 	clear = ->
 		pointers = {}
 		strokes = []
 		undoes = []
 		redoes = []
 		render()
-	
+		return
+
 	undo = ->
 		if undoes.length
 			redoes.push serialize_strokes strokes
 			strokes = deserialize_strokes undoes.pop()
 			update()
-	
+		return
+
 	redo = ->
 		if redoes.length
 			undoes.push serialize_strokes strokes
 			strokes = deserialize_strokes redoes.pop()
 			update()
-	
+		return
+
 	undoable = ->
 		undoes.push serialize_strokes strokes
 		redoes = []
-	
+		return
+
 	render = ->
 		baseline = canvas.height * 0.8
 		ctx.clearRect 0, 0, canvas.width, canvas.height
@@ -265,7 +276,8 @@ Spanvas = (word, data)->
 		ctx.strokeStyle = element_style?.color
 		ctx.lineWidth = 10
 		MultiMedium.drawStrokes strokes, ctx, canvas.height
-	
+		return
+
 	point_for = (e)->
 		rect = canvas.getBoundingClientRect()
 		canvas_style = getComputedStyle canvas
@@ -276,7 +288,7 @@ Spanvas = (word, data)->
 		scale = canvas.height
 		x: (e.clientX - rect.left - cpl) / scale
 		y: (e.clientY - rect.top - cpt) / scale
-	
+
 	canvas.addEventListener "pointerdown", (e)->
 		return if e.pointerType is "mouse" and e.button isnt 0
 		e.preventDefault()
@@ -285,7 +297,8 @@ Spanvas = (word, data)->
 		pointers[e.pointerId] = {stroke, type: e.pointerType}
 		strokes.push stroke
 		update()
-	
+		return
+
 	window.addEventListener "pointermove", (e)->
 		pointer = pointers[e.pointerId]
 		if pointer
@@ -299,23 +312,24 @@ Spanvas = (word, data)->
 			if Math.sqrt(dx*dx + dy*dy) > 0.02
 				pointer.stroke.points.push np
 				update()
-	
+		return
+
 	window.addEventListener "pointerup", (e)->
 		delete pointers[e.pointerId]
-	
+		return
+
 	canvas.addEventListener "pointercancel", (e)->
 		pointer = pointers[e.pointerId]
 		if pointer
 			strokes.splice strokes.indexOf(pointer.stroke), 1
 		delete pointers[e.pointerId]
-	
+		return
+
 	window.addEventListener "click", (e)->
 		spanvas = e.target.closest(".multi-medium-word")
 		spanvas?.select()
-		# unless e.ctrlKey or e.altKey or e.metaKey
-		# 	e.preventDefault() # prevent following links
-		# TODO: prevent following links in edit mode
-	
+		return
+
 	document.body.classList.add("multi-medium-edit-mode") # for cursor: pointer
 
 	# @TODO: localize this event listener
@@ -325,19 +339,21 @@ Spanvas = (word, data)->
 				if e.shiftKey then redo() else undo()
 			if e.keyCode is 89 # Y
 				redo()
-	
+		return
+
 	requestAnimationFrame update_dimensions
 	window.addEventListener "resize", update_dimensions
-	
+
 	requestAnimationFrame ->
 		for spanvas in all_spanvases when not spanvas.hasData()
 			spanvas.select()
 			break
-	
+		return
+
 	if the_input then alert "Multiple MultiMedium.Inputs aren't exactly supported (for a silly reason)"
 	the_input = element
 	the_input.clear = clear
-	
+
 	element
 
 @MultiMedium.setData = (datas)->
@@ -364,6 +380,7 @@ Spanvas = (word, data)->
 		ctx.lineTo(points[0].x*scale, points[0].y*scale+0.01) if points.length is 1 # make single points visible
 		ctx.lineTo(point.x*scale, point.y*scale) for point in points
 	ctx.stroke()
+	return
 
 # for override
 @MultiMedium.getPadding = (line_width)->
