@@ -29,6 +29,12 @@ node_modules
 .lock-wscript
 
 # =========================
+# IDE Files
+# =========================
+.idea
+.code
+
+# =========================
 # Operating System Files
 # =========================
 
