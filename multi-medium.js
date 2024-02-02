@@ -369,7 +369,7 @@ MultiMedium.Input = ()=> {
 
 	// @TODO: make this event listener local instead of global; right now it would interfere with undo/redo in any other inputs
 	window.addEventListener("keydown", (e)=> {
-		if (e.ctrlKey && !(e.metaKey || e.altKey)) {
+		if ((e.ctrlKey || e.metaKey) && !e.altKey) {
 			if (e.keyCode === 90) { // Z
 				if (e.shiftKey) { redo(); } else { undo(); }
 				e.preventDefault();
